@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="session-token" content="__SESSION_TOKEN__">
+  <meta name="color-scheme" content="light">
+  <title>商科文献雷达 · Business Literature Radar</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='%23e9eee8' stroke='%2323392f' stroke-width='3'/%3E%3Cpath d='M10 32h44M32 4v56M13 45c15-4 26-15 38-28' fill='none' stroke='%2323392f' stroke-width='2'/%3E%3Ccircle cx='43' cy='21' r='5' fill='%23846337'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/web/tokens.css">
+  <link rel="stylesheet" href="/web/styles.css">
+  <script src="/web/app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell" id="app-shell">
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="Business Literature Radar">
+        <svg class="brand-mark" viewBox="0 0 48 48" fill="none" aria-hidden="true"><circle cx="24" cy="24" r="20"/><path d="M4 24h40M24 4v40M8 33c11-3 23-12 32-25"/><circle class="brand-mark__point" cx="34" cy="14" r="3"/></svg>
+        <span class="brand-text"><strong data-i18n="brand">商科文献雷达</strong><small>BUSINESS LITERATURE RADAR</small></span>
+      </a>
+      <div class="header-actions">
+        <span class="connection" id="connection-status"><span class="connection__dot" aria-hidden="true"></span><span data-i18n="localOnly">仅在本机运行</span></span>
+        <button type="button" class="text-button" id="language-button" aria-label="Switch language">EN</button>
+        <button type="button" class="text-button settings-trigger" id="settings-button" data-i18n="settings">模型设置</button>
+      </div>
+    </header>
+
+    <main id="top" class="workspace">
+      <aside class="search-rail" aria-labelledby="search-heading">
+        <div class="rail-intro">
+          <span class="eyebrow" data-i18n="workspace">研究工作台</span>
+          <h1 id="search-heading" data-i18n="searchTitle">从问题出发。</h1>
+          <p data-i18n="searchIntro">写下你真正想找的文献。先查看检索计划，再开始搜索。</p>
+        </div>
+        <form id="search-form" novalidate>
+          <div class="field">
+            <label for="query-input" data-i18n="queryLabel">研究问题</label>
+            <textarea id="query-input" rows="5" required aria-required="true" aria-describedby="query-help query-error" data-i18n-placeholder="queryPlaceholder" placeholder="例如：生成式 AI 如何改变企业决策？"></textarea>
+            <p class="field-help" id="query-help" data-i18n="queryHelp">可以用中文或英文，尽量写明情境与核心变量。</p>
+            <p class="field-error" id="query-error" hidden></p>
+          </div>
+          <div class="field-grid">
+            <div class="field"><label for="year-from" data-i18n="fromYear">起始年份</label><input id="year-from" type="number" min="1900" max="2100" inputmode="numeric" value="2018"></div>
+            <div class="field"><label for="year-to" data-i18n="toYear">截止年份</label><input id="year-to" type="number" min="1900" max="2100" inputmode="numeric"></div>
+          </div>
+          <div class="field field--short"><label for="limit-input" data-i18n="limitLabel">展示文献</label><select id="limit-input"><option value="10">10</option><option value="20" selected>20</option><option value="40">40</option><option value="60">60</option></select></div>
+          <fieldset class="choice-group"><legend data-i18n="disciplineLabel">研究学科</legend><div id="discipline-options" class="choice-list"><span class="muted" data-i18n="loadingOptions">正在载入…</span></div></fieldset>
+          <fieldset class="choice-group"><legend data-i18n="sourceLabel">文献来源</legend><div id="source-options" class="choice-list"><span class="muted" data-i18n="loadingOptions">正在载入…</span></div></fieldset>
+          <label class="switch-row" for="translate-input"><span><strong data-i18n="translateLabel">同时生成中文译文</strong><small data-i18n="translateHelp">展示的每篇文献都配有题名与摘要译文</small></span><input id="translate-input" type="checkbox" role="switch"></label>
+          <div class="search-actions">
+            <button type="button" class="button button--quiet" id="plan-button" data-i18n="previewPlan">预览计划</button>
+            <button type="submit" class="button button--primary" id="search-button" data-i18n="startSearch">开始检索</button>
+          </div>
+        </form>
+        <p class="rail-footnote" data-i18n="metadataNote">只检索公开元数据、摘要和开放获取链接；不抓取付费全文。</p>
+      </aside>
+
+      <div class="main-column">
+        <section class="status-panel" aria-labelledby="status-heading">
+          <div class="section-heading"><div><p class="section-caption" data-i18n="currentTask">当前任务</p><h2 id="status-heading" data-i18n="statusHeading">检索进度</h2></div><span id="job-badge" class="status-badge" data-i18n="statusIdle">等待开始</span></div>
+          <div class="status-main"><div class="status-copy"><strong id="stage-text" data-i18n="readyStage">准备好后，先预览检索计划。</strong><span id="detail-text" data-i18n="readyDetail">检索期间可在这里查看阶段与百分比。</span></div><output id="progress-percent" class="progress-percent" for="progress-bar">0%</output></div>
+          <progress id="progress-bar" max="100" value="0" aria-label="Search progress"></progress>
+          <div class="status-bottom"><span id="live-status" class="status-live" role="status" aria-live="polite" data-i18n="idleFootnote">尚未运行</span><button type="button" class="text-button text-button--danger" id="stop-button" hidden data-i18n="stopSearch">停止检索</button></div>
+        </section>
+
+        <section class="plan-panel" id="plan-panel" aria-labelledby="plan-heading" hidden>
+          <div class="section-heading"><div><p class="section-caption" data-i18n="planCaption">搜索之前</p><h2 id="plan-heading" data-i18n="planHeading">检索计划</h2></div><span class="section-note" data-i18n="editablePlan">可编辑后再运行</span></div>
+          <div class="plan-grid">
+            <div class="field"><label for="plan-english" data-i18n="englishQuery">英文检索式</label><input id="plan-english" type="text"></div>
+            <div class="field"><label for="plan-summary" data-i18n="planSummary">检索思路</label><input id="plan-summary" type="text"></div>
+            <div class="field"><label for="plan-expanded" data-i18n="expandedQueries">拓展关键词</label><textarea id="plan-expanded" rows="3" data-i18n-placeholder="onePerLine" placeholder="每行一个"></textarea></div>
+            <div class="field"><label for="plan-must" data-i18n="mustTerms">必须包含</label><textarea id="plan-must" rows="3" data-i18n-placeholder="onePerLine" placeholder="每行一个"></textarea></div>
+            <div class="field"><label for="plan-exclude" data-i18n="excludeTerms">排除术语</label><textarea id="plan-exclude" rows="3" data-i18n-placeholder="onePerLine" placeholder="每行一个"></textarea></div>
+          </div>
+          <div class="plan-actions"><button type="button" class="button button--primary" id="plan-search-button" data-i18n="usePlan">使用此计划检索</button></div>
+        </section>
+
+        <section class="results-panel" aria-labelledby="results-heading">
+          <div class="section-heading results-heading"><div><p class="section-caption" data-i18n="readingDesk">阅读桌</p><h2 id="results-heading" data-i18n="resultsHeading">文献结果</h2></div><span id="results-count" class="section-note"></span></div>
+          <div id="results-empty" class="empty-state"><div class="empty-symbol" aria-hidden="true">↗</div><h3 data-i18n="emptyTitle">这里还没有文献。</h3><p data-i18n="emptyText">输入研究问题，预览计划，然后开始检索。找到的题名、摘要与来源会在这里集中展示。</p></div>
+          <div id="results-content" hidden><div class="results-toolbar"><p data-i18n="feedbackInstruction">标记相关性，帮助第二轮检索聚焦。</p><div class="results-toolbar__actions"><button type="button" class="button button--quiet" id="deep-button" disabled data-i18n="deepSearch">开始第二轮深搜</button><a id="report-link" class="button button--link" target="_blank" rel="noopener noreferrer" hidden data-i18n="openReport">打开完整报告 ↗</a></div></div><ol id="results-list" class="paper-list"></ol></div>
+        </section>
+      </div>
+    </main>
+    <footer class="site-footer"><span>© 2026 Mat-Wong · <span data-i18n="productName">商科文献雷达</span></span><span data-i18n="footerNote">本地运行 · 文献数据请以原始来源为准</span></footer>
+  </div>
+
+  <dialog id="settings-dialog" aria-labelledby="settings-heading"><form method="dialog" id="settings-form"><div class="dialog-head"><div><p class="section-caption" data-i18n="settingsCaption">个人模型连接</p><h2 id="settings-heading" data-i18n="settingsHeading">选择你的模型入口</h2></div><button type="button" class="icon-close" id="settings-close" aria-label="Close">×</button></div><p class="dialog-intro" data-i18n="settingsIntro">设置只保存在你的电脑上。公开版本不预置作者的私人密钥。</p>
+    <fieldset class="backend-group"><legend data-i18n="backendLabel">运行方式</legend><label class="backend-option"><input type="radio" name="llm-backend" value="api"><span><strong data-i18n="backendApi">使用自己的 API Key</strong><small data-i18n="backendApiHint">OpenAI、Claude 或兼容服务</small></span></label><label class="backend-option"><input type="radio" name="llm-backend" value="codex"><span><strong data-i18n="backendCodex">使用已登录的 Codex</strong><small data-i18n="backendCodexHint">使用本机 Codex CLI 与你的订阅</small></span></label><label class="backend-option"><input type="radio" name="llm-backend" value="advanced"><span><strong data-i18n="backendAdvanced">其他本机 CLI（高级）</strong><small data-i18n="backendAdvancedHint">OpenCode 或 Gemini CLI，需自行安装登录</small></span></label><label class="backend-option"><input type="radio" name="llm-backend" value="rules"><span><strong data-i18n="backendRules">先不用模型</strong><small data-i18n="backendRulesHint">规则检索；不支持模型翻译</small></span></label></fieldset>
+    <div id="api-fields" class="api-fields"><div class="field"><label for="provider-select" data-i18n="providerLabel">API 服务商</label><select id="provider-select"></select></div><div id="api-key-field" class="field"><label for="api-key-input" data-i18n="apiKeyLabel">API Key</label><input id="api-key-input" type="password" autocomplete="off" spellcheck="false" data-i18n-placeholder="savedKeyPlaceholder" placeholder="输入你的 API Key"><small id="key-help" class="field-help" data-i18n="keyLocal">密钥保存在本机，不会出现在报告中。</small></div><details class="advanced-settings"><summary data-i18n="advancedSettings">高级设置</summary><div id="api-endpoint-field" class="field"><label for="api-endpoint-input" data-i18n="endpointLabel">API 地址</label><input id="api-endpoint-input" type="url" spellcheck="false" placeholder="https://…"></div><div class="field"><label for="api-models-input" data-i18n="modelsLabel">模型顺序</label><input id="api-models-input" type="text" spellcheck="false" data-i18n-placeholder="modelsPlaceholder" placeholder="用英文逗号分隔多个模型"><small class="field-help" data-i18n="modelsHelp">额度不足时会按此顺序尝试其他模型。</small></div></details></div>
+    <div class="dialog-note" id="backend-note" role="note"></div><label class="notification-option" for="desktop-notify-input"><input type="checkbox" id="desktop-notify-input"><span><strong data-i18n="desktopNotify">检索完成时发送桌面提醒</strong><small data-i18n="desktopNotifyHelp">需要浏览器通知权限，可随时关闭。</small></span></label><p class="field-error" id="settings-error" hidden></p><div class="dialog-actions"><button type="button" class="button button--quiet" id="settings-cancel" data-i18n="cancel">取消</button><button type="submit" class="button button--primary" id="settings-save" data-i18n="saveSettings">保存设置</button></div><div class="dialog-exit"><button type="button" class="text-button text-button--danger" id="exit-button" data-i18n="exitApp">退出应用</button><span data-i18n="exitHelp">停止本机服务后即可关闭此标签页。</span></div></form></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden><span id="toast-text"></span><button type="button" id="toast-close" aria-label="Dismiss">×</button></div>
+</body>
+</html>

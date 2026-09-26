@@ -1,0 +1,30 @@
+# Python and local tools
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Generated local research data and private configuration
+outputs/
+output/
+settings.json
+*.key
+*.pem
+.env
+.env.*
+!.env.example
+
+# Build products
+build/
+dist/
+*.spec
+*.zip
+
+# Local editor and OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

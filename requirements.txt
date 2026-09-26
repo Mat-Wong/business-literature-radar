@@ -1,0 +1,2 @@
+# Runtime dependencies: none. Python 3.10+ standard library is sufficient.
+# Windows binary builds install PyInstaller separately in build_windows.ps1.
