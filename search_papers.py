@@ -72,15 +72,16 @@ BUSINESS_CONTEXT_TERMS = [
 ]
 
 DISCIPLINE_LABELS = {
-    "is": "Information Systems / 信息系统",
+    "is": "IS · Information Systems / IS · 信息系统",
     "qm": "Quantitative Methods & Analytics / 数量方法",
-    "om": "Operations Management / 运营管理",
-    "strategy": "Strategy / 战略",
-    "finance": "Finance / 金融",
-    "accounting": "Accounting / 会计",
-    "management": "Management & OB / 管理与组织行为",
-    "marketing": "Marketing / 市场营销",
-    "economics": "Business Economics / 商业经济学",
+    "om": "OM · Operations Management / OM · 运营管理",
+    "or": "OR · Operations Research / OR · 运筹学",
+    "strategy": "Strategy / Strategy · 战略",
+    "finance": "Fin · Finance / Fin · 金融",
+    "accounting": "Acc · Accounting / Acc · 会计",
+    "management": "Mgmt · Management / Mgmt · 管理学",
+    "marketing": "Mkt · Marketing / Mkt · 市场营销",
+    "economics": "Econ · Economics / Econ · 经济学",
     "stats": "Econometrics, Statistics & Data Science / 计量统计与数据科学",
     "behavioral": "Behavioral Science / 行为科学",
     "political_economy": "Political Economy & Public Policy / 政治经济与公共政策",
@@ -90,7 +91,7 @@ DISCIPLINE_LABELS = {
 
 BUSINESS_JOURNALS: dict[str, dict[str, Any]] = {
     "MIS Quarterly": {
-        "aliases": ["MISQ", "MIS Quarterly", "Management Information Systems Quarterly"],
+        "aliases": ["MISQ", "MIS Quarterly", "Management Information Systems Quarterly", "MIS Quarterly: Management Information Systems"],
         "issns": ["0276-7783", "2162-9730"],
         "priority": 24,
         "disciplines": ["is"],
@@ -101,18 +102,23 @@ BUSINESS_JOURNALS: dict[str, dict[str, Any]] = {
         "priority": 24,
         "disciplines": ["is"],
     },
+    "INFORMS Journal on Computing": {
+        "aliases": ["INFORMS Journal on Computing", "Journal on Computing", "JOC"],
+        "issns": ["1091-9856", "1526-5528"],
+        "priority": 24, "disciplines": ["is", "or", "qm"],
+    },
     "Management Science": {
         "aliases": ["MS", "Management Science"],
         "issns": ["0025-1909", "1526-5501"],
         "priority": 24,
-        "disciplines": ["is", "qm", "om", "strategy", "stats", "behavioral", "healthcare"],
+        "disciplines": ["is", "qm", "om", "or", "strategy", "finance", "marketing", "economics", "stats", "behavioral", "healthcare"],
     },
     "Operations Research": {
         "aliases": ["Operations Research"], "issns": ["0030-364X"],
-        "priority": 23, "disciplines": ["qm", "om", "stats"],
+        "priority": 23, "disciplines": ["qm", "om", "or", "stats"],
     },
     "Manufacturing & Service Operations Management": {
-        "aliases": ["M&SOM", "MSOM", "Manufacturing & Service Operations Management"],
+        "aliases": ["M&SOM", "MSOM", "Manufacturing & Service Operations Management", "Manufacturing and Service Operations Management"],
         "issns": ["1523-4614"], "priority": 23, "disciplines": ["om"],
     },
     "Production and Operations Management": {
@@ -126,6 +132,11 @@ BUSINESS_JOURNALS: dict[str, dict[str, Any]] = {
     "Strategic Management Journal": {
         "aliases": ["SMJ", "Strategic Management Journal"],
         "issns": ["0143-2095"], "priority": 24, "disciplines": ["strategy"],
+    },
+    "Journal of International Business Studies": {
+        "aliases": ["Journal of International Business Studies", "JIBS"],
+        "issns": ["0047-2506", "1478-6990"],
+        "priority": 24, "disciplines": ["strategy", "management", "economics"],
     },
     "Organization Science": {
         "aliases": ["Organization Science"], "issns": ["1047-7039"],
@@ -152,16 +163,16 @@ BUSINESS_JOURNALS: dict[str, dict[str, Any]] = {
         "issns": ["0749-5978"], "priority": 22, "disciplines": ["management", "behavioral"],
     },
     "Journal of Finance": {
-        "aliases": ["JF", "Journal of Finance"], "issns": ["0022-1082"],
+        "aliases": ["JF", "Journal of Finance", "The Journal of Finance"], "issns": ["0022-1082"],
         "priority": 24, "disciplines": ["finance", "economics"],
     },
     "Journal of Financial Economics": {
         "aliases": ["JFE", "Journal of Financial Economics"],
-        "issns": ["0304-405X"], "priority": 24, "disciplines": ["finance"],
+        "issns": ["0304-405X"], "priority": 24, "disciplines": ["finance", "economics"],
     },
     "Review of Financial Studies": {
-        "aliases": ["RFS", "Review of Financial Studies"],
-        "issns": ["0893-9454"], "priority": 24, "disciplines": ["finance"],
+        "aliases": ["RFS", "Review of Financial Studies", "The Review of Financial Studies"],
+        "issns": ["0893-9454"], "priority": 24, "disciplines": ["finance", "economics"],
     },
     "American Economic Review": {
         "aliases": ["AER", "American Economic Review"], "issns": ["0002-8282"],
@@ -289,6 +300,85 @@ BUSINESS_JOURNALS: dict[str, dict[str, Any]] = {
     },
 }
 
+# UTD's list is a publication catalog, not a list of PhD concentrations.
+# Econ uses overlapping business journals; economics field journals above are
+# retained for legacy CLI searches, but are never presented as UTD24 journals.
+PUBLIC_DISCIPLINE_IDS = (
+    "finance", "accounting", "marketing", "om", "or", "is", "management", "economics", "strategy",
+)
+UTD24_JOURNAL_NAMES = (
+    "The Accounting Review", "Journal of Accounting and Economics", "Journal of Accounting Research",
+    "Journal of Finance", "Journal of Financial Economics", "Review of Financial Studies",
+    "Information Systems Research", "INFORMS Journal on Computing", "MIS Quarterly",
+    "Journal of Consumer Research", "Journal of Marketing", "Journal of Marketing Research", "Marketing Science",
+    "Management Science", "Operations Research", "Journal of Operations Management",
+    "Manufacturing & Service Operations Management", "Production and Operations Management",
+    "Academy of Management Journal", "Academy of Management Review", "Administrative Science Quarterly",
+    "Organization Science", "Journal of International Business Studies", "Strategic Management Journal",
+)
+UTD24_JOURNALS = {name: BUSINESS_JOURNALS[name] for name in UTD24_JOURNAL_NAMES}
+PUBLICATION_SCOPE_IDS = {"utd24", "arxiv", "ssrn"}
+
+
+def utd24_journals_for_disciplines(disciplines: Iterable[str]) -> list[str]:
+    selected = set(disciplines)
+    return [name for name, meta in UTD24_JOURNALS.items()
+            if selected.intersection(meta["disciplines"])]
+
+
+def metadata_sources_for_scopes(scopes: Iterable[str]) -> list[str]:
+    selected = set(scopes)
+    sources = ["openalex", "crossref", "semantic_scholar"] if "utd24" in selected else []
+    if "arxiv" in selected:
+        sources.append("arxiv")
+    if "ssrn" in selected:
+        sources.append("ssrn")
+    return sources
+
+
+def set_publication_selection(plan: dict[str, Any], scopes: list[str], journals: list[str] | None = None) -> None:
+    """Store a user's publication choices separately from retrieval adapters."""
+    plan["publication_scopes"] = list(dict.fromkeys(scope for scope in scopes if scope in PUBLICATION_SCOPE_IDS))
+    if "utd24" in plan["publication_scopes"]:
+        names = utd24_journals_for_disciplines(plan.get("selected_disciplines", ["is", "qm"])) if journals is None else journals
+        plan["target_journals"] = list(dict.fromkeys(name for name in names if name in UTD24_JOURNALS))
+    else:
+        plan["target_journals"] = []
+    plan["metadata_sources"] = metadata_sources_for_scopes(plan["publication_scopes"])
+
+
+def publication_name(cand: PaperCandidate) -> str:
+    if is_arxiv_candidate(cand):
+        return "arXiv"
+    if is_ssrn_candidate(cand):
+        return "SSRN"
+    return cand.venue or cand.source
+
+
+def filter_publication_candidates(candidates: list[PaperCandidate], plan: dict[str, Any]) -> list[PaperCandidate]:
+    """Enforce selected publications before ranking, model calls or reports.
+
+    Legacy plans without publication_scopes intentionally keep broad CLI behavior.
+    Unknown/missing venues are excluded from journal-only searches rather than
+    silently classifying them as UTD24 records.
+    """
+    if "publication_scopes" not in plan:
+        return candidates
+    scopes = set(plan["publication_scopes"])
+    journals = set(plan.get("target_journals", []))
+
+    allowed_venues = {journal_venue_key(alias) for name in journals if name in UTD24_JOURNALS
+                      for alias in UTD24_JOURNALS[name]["aliases"]}
+    return [candidate for candidate in candidates if
+            ("utd24" in scopes and journal_venue_key(candidate.venue) in allowed_venues)
+            or ("arxiv" in scopes and is_arxiv_candidate(candidate))
+            or ("ssrn" in scopes and is_ssrn_candidate(candidate))]
+
+
+def journal_venue_key(value: str) -> str:
+    value = value.lower().replace("&", " and ")
+    return re.sub(r"\W+", " ", re.sub(r"^the\s+", "", value)).strip()
+
 CS_VENUES = {
     "ICML": ["ICML", "International Conference on Machine Learning"],
     "NeurIPS": ["NeurIPS", "NIPS", "Neural Information Processing Systems"],
@@ -332,7 +422,7 @@ FINNLP_HINTS = [
 
 SOURCE_GROUPS = [
     ("all", "全部 / All"),
-    ("utd", "商科目标顶刊 / Business Journals"),
+    ("utd", "UTD24 期刊 / UTD24 Journals"),
     ("ssrn", "SSRN"),
     ("arxiv", "arXiv"),
     ("cs", "CS/ML 来源 / CS/ML Sources"),
@@ -354,7 +444,7 @@ def journals_for_disciplines(disciplines: Iterable[str]) -> dict[str, dict[str, 
 
 def target_business_journals(plan: dict[str, Any]) -> dict[str, dict[str, Any]]:
     names = set(plan.get("target_journals") or [])
-    if names:
+    if names or "publication_scopes" in plan:
         return {name: BUSINESS_JOURNALS[name] for name in names if name in BUSINESS_JOURNALS}
     return journals_for_disciplines(plan.get("selected_disciplines") or ["is", "qm"])
 
@@ -831,9 +921,8 @@ class OpenAlexSource(SearchSource):
                         source_payload={"query": query},
                     )
                 )
-        candidates.extend(
-            self._search_cs_venue_queries(plan, start_year, end_year, issues)
-        )
+        if "publication_scopes" not in plan:
+            candidates.extend(self._search_cs_venue_queries(plan, start_year, end_year, issues))
         return candidates
 
     def _search_cs_venue_queries(
@@ -955,13 +1044,7 @@ class CrossrefSource(SearchSource):
 
         # Target-journal passes keep the business sources visible even when the
         # global query is dominated by arXiv/CS terms.
-        journal_queries = dedupe_keep_order(
-            queries[:2]
-            + [
-                "artificial intelligence",
-                "machine learning",
-            ]
-        )
+        journal_queries = dedupe_keep_order(queries[:2])
         for journal, meta in target_business_journals(plan).items():
             issn = meta["issns"][0]
             for query in journal_queries:
@@ -1579,6 +1662,8 @@ def sanitize_plan(plan: dict[str, Any], original_query: str) -> dict[str, Any]:
         "selected_disciplines",
         "target_journals",
     ]
+    if "publication_scopes" in plan:
+        list_keys.extend(["publication_scopes", "metadata_sources"])
     for key in list_keys:
         value = plan.get(key, [])
         if isinstance(value, str):
@@ -1588,7 +1673,7 @@ def sanitize_plan(plan: dict[str, Any], original_query: str) -> dict[str, Any]:
         cleaned_values = [clean_text(str(v)) for v in value if clean_text(str(v))]
         if key == "arxiv_queries":
             cleaned_values = [normalize_arxiv_query(v) for v in cleaned_values]
-        plan[key] = cleaned_values[:12]
+        plan[key] = cleaned_values[:24 if key == "target_journals" else 12]
     if not plan.get("expanded_queries"):
         plan["expanded_queries"] = rule_query_plan(original_query)["expanded_queries"]
     if not plan.get("english_query"):
@@ -1615,7 +1700,10 @@ def load_search_plan(
         if key in merged and value not in (None, "", []):
             merged[key] = value
     merged["selected_disciplines"] = disciplines
-    merged["target_journals"] = list(journals_for_disciplines(disciplines))
+    if "publication_scopes" in loaded:
+        set_publication_selection(merged, loaded["publication_scopes"], loaded.get("target_journals", []))
+    else:
+        merged["target_journals"] = list(journals_for_disciplines(disciplines))
     return sanitize_plan(merged, original_query)
 
 
@@ -2120,10 +2208,10 @@ def display_grouped_candidates(candidates: list[PaperCandidate]) -> dict[str, li
 
 
 def is_utd_candidate(cand: PaperCandidate) -> bool:
-    venue = (cand.venue or "").lower()
+    venue = journal_venue_key(cand.venue or "")
     return any(
-        venue_alias_match(venue, alias)
-        for meta in BUSINESS_JOURNALS.values()
+        venue == journal_venue_key(alias)
+        for meta in UTD24_JOURNALS.values()
         for alias in meta["aliases"]
     )
 
@@ -2429,7 +2517,7 @@ def render_candidate(idx: int, cand: PaperCandidate) -> list[str]:
         f"- 综合分 / Score: {cand.score:.1f}/100",
         f"- 作者 / Authors: {authors or 'unknown'}",
         f"- 来源分组 / Source group: {source_group_label(source_group_key(cand))}",
-        f"- 年份 / 期刊会议 / 来源 / Year / venue / source: {year} / {cand.venue or 'unknown'} / {cand.source}",
+        f"- 年份 / 期刊 / Year / publication: {year} / {publication_name(cand)}",
         f"- 链接 / Links: {link_text}",
         f"- 获取状态 / Access: {access}",
         f"- 为什么相关 / Why relevant: {cand.reason}",
@@ -2460,7 +2548,11 @@ def render_html(
     permission_count = sum(1 for cand in candidates if cand.needs_permission and not cand.pdf_url)
     avg_score = sum(cand.score for cand in candidates) / len(candidates) if candidates else 0
     issue_count = len(issues)
-    tabs_html = render_tabs_html(candidates, issues)
+    displayed_groups = SOURCE_GROUPS
+    if "publication_scopes" in plan:
+        scope_groups = {"all"} | {"utd" if scope == "utd24" else scope for scope in plan["publication_scopes"]}
+        displayed_groups = [(key, label) for key, label in SOURCE_GROUPS if key in scope_groups]
+    tabs_html = render_tabs_html(candidates, issues, displayed_groups)
     query_items = "\n".join(
         f"<li>{h(item)}</li>" for item in plan.get("expanded_queries", [])[:10]
     )
@@ -2468,7 +2560,7 @@ def render_html(
     source_items = "\n".join(
         f"<li>{bi(*label.split(' / ', 1)) if ' / ' in label else h(label)}: "
         f"{len(group_counts.get(key, []))}</li>"
-        for key, label in SOURCE_GROUPS
+        for key, label in displayed_groups
         if key != "all"
     )
     issues_html = render_issues_html(issues, candidates)
@@ -2815,7 +2907,7 @@ def render_html(
       <aside>
         <h2>{bi("检索计划", "Query plan")}</h2>
         <p class="small"><strong>{bi("需求理解", "Interpreted need")}</strong><br>{h(plan.get("summary", ""))}</p>
-        <p class="small"><strong>{bi("学科方向", "Disciplines")}</strong><br>{h(", ".join(plan.get("selected_disciplines", [])))}</p>
+        <p class="small"><strong>{bi("学科方向", "Disciplines")}</strong><br>{'、'.join(bi(label.partition(' / ')[2] or label.partition(' / ')[0], label.partition(' / ')[0]) for label in [DISCIPLINE_LABELS.get(key, key) for key in plan.get('selected_disciplines', [])])}</p>
         <p class="small"><strong>{bi("目标期刊", "Target journals")}</strong><br>{h(", ".join(plan.get("target_journals", [])))}</p>
         <p class="small"><strong>{bi("英文检索式", "English query")}</strong><br>{h(plan.get("english_query", ""))}</p>
         <details open>
@@ -2839,10 +2931,10 @@ def render_html(
       {issues_html}
     </section>
 
-    <section class="notes">
-      <h2>{bi("模型使用记录", "Model usage log")}</h2>
+    <details class="notes">
+      <summary>{bi("模型使用记录", "Model usage log")}</summary>
       {llm_html}
-    </section>
+    </details>
   </main>
   <script>
     const setLanguage = (language) => {{
@@ -2869,11 +2961,11 @@ def render_html(
 """
 
 
-def render_tabs_html(candidates: list[PaperCandidate], issues: list[SourceIssue]) -> str:
+def render_tabs_html(candidates: list[PaperCandidate], issues: list[SourceIssue], source_groups: list[tuple[str, str]] | None = None) -> str:
     groups = display_grouped_candidates(candidates)
     buttons = []
     panels = []
-    for index, (key, label) in enumerate(SOURCE_GROUPS):
+    for index, (key, label) in enumerate(source_groups if source_groups is not None else SOURCE_GROUPS):
         rows = groups.get(key, [])
         active = " active" if index == 0 else ""
         zh, separator, en = label.partition(" / ")
@@ -2901,8 +2993,8 @@ def render_tabs_html(candidates: list[PaperCandidate], issues: list[SourceIssue]
 
 def render_empty_group_html(key: str, issues: list[SourceIssue]) -> str:
     messages = {
-        "utd": ("所选商科期刊暂无候选；可扩大年份或修改检索式。",
-                "No candidates from the selected business journals. Widen the years or revise the query."),
+        "utd": ("所选 UTD24 期刊暂未找到结果，可扩大年份或调整关键词。",
+                "No results from the selected UTD24 journals. Widen the years or revise the query."),
         "ssrn": ("没有抓到 SSRN 论文；站点可能限制自动访问。",
                  "No SSRN papers were retrieved; the site may restrict automated access."),
         "arxiv": ("没有 arXiv 候选；可放宽技术关键词或年份。",
@@ -2942,7 +3034,7 @@ def render_candidate_html(idx: int, cand: PaperCandidate, id_prefix: str = "pape
     access_class = "open" if cand.open_access or cand.pdf_url else "warn"
     score_width = max(0, min(100, cand.score))
     badges = [
-        f'<span class="badge source">{h(cand.source)}</span>',
+        f'<span class="badge source">{h(publication_name(cand))}</span>',
         f'<span class="badge">{h(str(year))}</span>',
         f'<span class="badge {access_class}">{access_text}</span>',
     ]
@@ -3001,12 +3093,13 @@ def render_candidate_html(idx: int, cand: PaperCandidate, id_prefix: str = "pape
 def render_issues_html(issues: list[SourceIssue], candidates: list[PaperCandidate]) -> str:
     lines = []
     if issues:
-        lines.append("<ul>")
+        lines.append(f"<p>{bi('部分检索请求未成功，结果可能不完整。', 'Some search requests failed; results may be incomplete.')}</p>")
+        lines.append(f"<details><summary>{bi('查看详情', 'Show details')}</summary><ul>")
         for issue in issues:
             lines.append(
                 f"<li><strong>{h(issue.source)}</strong> / {h(issue.kind)}: {h(issue.detail)}</li>"
             )
-        lines.append("</ul>")
+        lines.append("</ul></details>")
     else:
         lines.append(f"<p>{bi('没有来源级错误。', 'No source-level errors reported.')}</p>")
 
@@ -3064,6 +3157,8 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
             "dblp,ssrn or all."
         ),
     )
+    parser.add_argument("--publication-scopes", default=None, help="User-facing scopes: utd24,arxiv,ssrn. Omit for legacy broad searches.")
+    parser.add_argument("--target-journals", default=None, help="Comma-separated UTD24 journal titles; used with --publication-scopes.")
     parser.add_argument(
         "--llm-backend",
         choices=["auto", "opencode", "rules"],
@@ -3244,6 +3339,19 @@ def main(argv: list[str]) -> int:
     else:
         plan = llm_query_plan(args.query, llm, disciplines)
 
+    if args.publication_scopes is not None:
+        scopes = [value.strip() for value in args.publication_scopes.split(",") if value.strip()]
+        if not scopes or set(scopes) - PUBLICATION_SCOPE_IDS:
+            print("ERROR: select UTD24 journals, arXiv or SSRN", file=sys.stderr)
+            return 2
+        journals = None if args.target_journals is None else [value.strip() for value in args.target_journals.split(",") if value.strip()]
+        if journals is not None and set(journals) - set(UTD24_JOURNALS):
+            print("ERROR: unknown UTD24 journal title", file=sys.stderr)
+            return 2
+        set_publication_selection(plan, scopes, journals)
+    if "publication_scopes" in plan:
+        source_names = metadata_sources_for_scopes(plan["publication_scopes"])
+
     if args.plan_only:
         if args.plan_output:
             plan_path = save_search_plan(plan, Path(args.plan_output))
@@ -3273,6 +3381,8 @@ def main(argv: list[str]) -> int:
 
     def source_progress(done: int, total: int, source_name: str, finished: bool) -> None:
         percent = 18 + round(50 * done / max(total, 1))
+        if "publication_scopes" in plan:
+            source_name = source_name if source_name in {"arXiv", "SSRN"} else "期刊记录"
         if finished:
             detail = f"已完成 {source_name}（{done}/{total}）"
         else:
@@ -3290,7 +3400,7 @@ def main(argv: list[str]) -> int:
 
     report_progress(70, "整理结果", f"合并 {len(raw_candidates)} 条候选记录")
     print(f"[3/5] Deduplicating {len(raw_candidates)} raw candidates...", flush=True)
-    candidates = dedupe_candidates(raw_candidates)
+    candidates = filter_publication_candidates(dedupe_candidates(raw_candidates), plan)
     score_candidates(candidates, plan)
     candidates = sorted(candidates, key=lambda c: c.score, reverse=True)
 

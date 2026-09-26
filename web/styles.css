@@ -151,6 +151,14 @@ dialog::backdrop { background: var(--color-ink); opacity: .42; }
 .backend-option strong { font-size: var(--text-sm); }
 .backend-option small { color: var(--color-muted); font-size: var(--text-xs); }
 .api-fields { display: grid; gap: var(--space-sm); }
+.journal-picker { margin: 0 0 var(--space-lg); border-top: var(--rule-hair) solid var(--color-rule); padding-top: var(--space-sm); }
+.journal-picker summary { cursor: pointer; font-size: var(--text-sm); font-weight: 700; }
+.journal-picker summary .muted { margin-left: var(--space-xs); font-weight: 400; }
+.journal-actions { display: flex; gap: var(--space-md); margin: var(--space-sm) 0; }
+.journal-list { display: grid; gap: var(--space-xs); max-height: 280px; overflow-y: auto; padding-right: var(--space-xs); }
+.journal-list .choice-chip { align-items: flex-start; width: 100%; white-space: normal; }
+.journal-list .choice-chip span { min-width: 0; overflow-wrap: anywhere; }
+.journal-list input { flex: 0 0 auto; margin-top: 3px; }
 .advanced-settings { margin-top: var(--space-xs); }
 .advanced-settings summary { min-height: 44px; display: inline-flex; align-items: center; color: var(--color-accent); font-size: var(--text-sm); font-weight: 700; cursor: pointer; }
 .advanced-settings .field { margin-top: var(--space-sm); }

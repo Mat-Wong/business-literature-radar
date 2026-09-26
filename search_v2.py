@@ -24,6 +24,8 @@ from search_papers import (
     build_llm_manager,
     clean_text,
     dedupe_candidates,
+    filter_publication_candidates,
+    metadata_sources_for_scopes,
     fetch_json,
     infer_permission,
     parse_jsonish,
@@ -469,7 +471,9 @@ def main(argv: list[str]) -> int:
         query, base_plan, feedback, rows, llm
     )
 
-    source_names = [value.strip() for value in args.sources.split(",") if value.strip()]
+    source_names = (metadata_sources_for_scopes(refined_plan["publication_scopes"])
+                    if "publication_scopes" in refined_plan else
+                    [value.strip() for value in args.sources.split(",") if value.strip()])
     limit = args.limit or len(rows)
     report_progress(18, "第二轮检索", "执行反馈驱动的新查询")
     second_raw, issues = search_sources(
@@ -489,6 +493,8 @@ def main(argv: list[str]) -> int:
         max(1, min(args.citation_per_seed, 10)),
         issues,
     )
+    second_raw = filter_publication_candidates(second_raw, refined_plan)
+    citation_candidates = filter_publication_candidates(citation_candidates, refined_plan)
 
     round_one = [candidate_from_row(row) for row in rows]
     before_keys = {candidate_identity(candidate) for candidate in round_one}
@@ -504,7 +510,9 @@ def main(argv: list[str]) -> int:
     }
 
     report_progress(72, "合并与重排", "合并两轮结果、引用网络和显式反馈")
-    candidates = dedupe_candidates(round_one + second_raw + citation_candidates)
+    candidates = filter_publication_candidates(
+        dedupe_candidates(round_one + second_raw + citation_candidates), refined_plan
+    )
     score_candidates(candidates, refined_plan)
     rerank_with_llm(query, refined_plan, candidates, llm, args.llm_max_candidates)
     apply_feedback_scores(candidates, feedback)

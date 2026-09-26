@@ -74,7 +74,9 @@ def _row_identity(row: dict[str, Any]) -> str:
 
 
 def _public_results(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    return [dict(row, identity=_row_identity(row)) for row in rows if isinstance(row, dict)]
+    return [dict(row, identity=_row_identity(row),
+                 publication_source=search_papers.publication_name(search_v2.candidate_from_row(row)))
+            for row in rows if isinstance(row, dict)]
 
 
 def _parse_selection(values: Any, allowed: set[str], default: list[str]) -> list[str]:
@@ -100,14 +102,39 @@ def _validate_search(payload: dict[str, Any]) -> dict[str, Any]:
         raise ValueError("文献数量必须是整数 / Result count must be an integer.") from exc
     if not 1 <= limit <= 150:
         raise ValueError("文献数量应在 1–150 之间 / Choose 1–150 papers.")
+    disciplines = _parse_selection(payload.get("disciplines"), set(search_papers.DISCIPLINE_LABELS), ["is", "or"])
+    incoming_scopes = payload.get("publication_scopes", payload.get("sources"))
+    public_selection = not isinstance(incoming_scopes, list) or not incoming_scopes or any(
+        str(value) == "utd24" for value in incoming_scopes
+    ) or all(str(value) in search_papers.PUBLICATION_SCOPE_IDS for value in incoming_scopes)
+    scopes: list[str] | None = None
+    journals: list[str] | None = None
+    if public_selection:
+        if isinstance(incoming_scopes, list) and not incoming_scopes:
+            raise ValueError("请选择至少一种文献来源 / Select at least one publication source.")
+        if isinstance(incoming_scopes, list) and any(str(value) not in search_papers.PUBLICATION_SCOPE_IDS for value in incoming_scopes):
+            raise ValueError("请选择 UTD24 期刊、arXiv 或 SSRN / Select UTD24 journals, arXiv or SSRN.")
+        scopes = _parse_selection(incoming_scopes, search_papers.PUBLICATION_SCOPE_IDS, ["utd24", "arxiv", "ssrn"])
+        incoming_journals = payload.get("journals")
+        if incoming_journals is not None and not isinstance(incoming_journals, list):
+            raise ValueError("期刊选择格式不正确 / Invalid journal selection.")
+        if isinstance(incoming_journals, list) and any(str(name) not in search_papers.UTD24_JOURNALS for name in incoming_journals):
+            raise ValueError("期刊不在 UTD24 列表中 / A selected journal is not in UTD24.")
+        journals = (list(dict.fromkeys(str(name) for name in incoming_journals if str(name) in search_papers.UTD24_JOURNALS))
+                    if incoming_journals is not None else search_papers.utd24_journals_for_disciplines(disciplines))
+        if "utd24" in scopes and not journals:
+            raise ValueError("请至少选择一本 UTD24 期刊 / Select at least one UTD24 journal.")
+        sources = search_papers.metadata_sources_for_scopes(scopes)
+    else:
+        sources = _parse_selection(payload.get("sources"), SOURCE_IDS, ["openalex", "crossref", "semantic_scholar"])
     return {
         "query": query,
         "years": years,
         "limit": limit,
-        "disciplines": _parse_selection(
-            payload.get("disciplines"), set(search_papers.DISCIPLINE_LABELS), ["is", "qm"]
-        ),
-        "sources": _parse_selection(payload.get("sources"), SOURCE_IDS, ["openalex", "crossref", "semantic_scholar"]),
+        "disciplines": disciplines,
+        "sources": sources,
+        "publication_scopes": scopes,
+        "journals": journals,
         "translate": bool(payload.get("translate", False)),
         "plan": payload.get("plan") if isinstance(payload.get("plan"), dict) else None,
     }
@@ -218,6 +245,10 @@ class Controller:
                 "query": (spec or {}).get("query", ""),
                 "years": (spec or {}).get("years", ""),
                 "limit": (spec or {}).get("limit", 0),
+                "disciplines": (spec or {}).get("disciplines", []),
+                "sources": (spec or {}).get("publication_scopes") or (spec or {}).get("sources", []),
+                "publication_scopes": (spec or {}).get("publication_scopes"),
+                "journals": (spec or {}).get("journals"),
             }
             self.job = job
         threading.Thread(target=self._run, args=(job["id"], fn), daemon=True).start()
@@ -324,6 +355,9 @@ class Controller:
                     "--sources", ",".join(spec["sources"]),
                     "--plan-only", "--plan-output", str(plan_path), "--progress",
                 ] + self._provider_args()
+                if spec["publication_scopes"] is not None:
+                    command.extend(["--publication-scopes", ",".join(spec["publication_scopes"]),
+                                    "--target-journals", ",".join(spec["journals"] or [])])
                 code, lines = self._execute(job_id, command)
                 self._checked_exit(code, lines)
                 plan = json.loads(plan_path.read_text(encoding="utf-8"))
@@ -393,7 +427,10 @@ class Controller:
             raise ValueError("翻译全部文献需要先配置 API 或 Codex；规则模式不会伪造译文。")
         plan = search_papers.sanitize_plan(dict(plan), spec["query"])
         plan["selected_disciplines"] = spec["disciplines"]
-        plan["target_journals"] = list(search_papers.journals_for_disciplines(spec["disciplines"]))
+        if spec["publication_scopes"] is not None:
+            search_papers.set_publication_selection(plan, spec["publication_scopes"], spec["journals"])
+        else:
+            plan["target_journals"] = list(search_papers.journals_for_disciplines(spec["disciplines"]))
 
         def task(job_id: str) -> None:
             directory = self._make_run_dir(plan, spec["query"])
@@ -475,8 +512,15 @@ class Controller:
             self._checked_exit(code, lines)
             self._finish_report(job_id, deep_dir)
 
-        report_query = json.loads(prior.read_text(encoding="utf-8")).get("query", "")
-        return self._start("deep-search", task, {"query": report_query})
+        prior_report = json.loads(prior.read_text(encoding="utf-8"))
+        prior_plan = prior_report.get("plan") or {}
+        return self._start("deep-search", task, {
+            "query": prior_report.get("query", ""),
+            "years": "-".join(map(str, prior_report.get("years", []))),
+            "limit": len(results), "disciplines": prior_plan.get("selected_disciplines", []),
+            "publication_scopes": prior_plan.get("publication_scopes"),
+            "journals": prior_plan.get("target_journals"),
+        })
 
     def stop(self) -> dict[str, Any]:
         with self.lock:
@@ -550,17 +594,18 @@ class Handler(BaseHTTPRequestHandler):
             return
         if path == "/api/meta":
             disciplines = []
-            for key, label in search_papers.DISCIPLINE_LABELS.items():
+            for key in search_papers.PUBLIC_DISCIPLINE_IDS:
+                label = search_papers.DISCIPLINE_LABELS[key]
                 en, _, zh = label.partition(" / ")
                 disciplines.append({"id": key, "label_zh": zh or en, "label_en": en})
             sources = [
-                {"id": "openalex", "label_zh": "OpenAlex", "label_en": "OpenAlex"},
-                {"id": "crossref", "label_zh": "Crossref", "label_en": "Crossref"},
-                {"id": "semantic_scholar", "label_zh": "Semantic Scholar", "label_en": "Semantic Scholar"},
+                {"id": "utd24", "label_zh": "UTD24 期刊", "label_en": "UTD24 journals"},
                 {"id": "arxiv", "label_zh": "arXiv", "label_en": "arXiv"},
                 {"id": "ssrn", "label_zh": "SSRN", "label_en": "SSRN"},
-                {"id": "dblp", "label_zh": "DBLP", "label_en": "DBLP"},
             ]
+            journals = [{"id": name, "label_zh": name, "label_en": name,
+                         "disciplines": meta["disciplines"]}
+                        for name, meta in search_papers.UTD24_JOURNALS.items()]
             labels = {"openai": ("OpenAI API", "OpenAI API"), "anthropic": ("Claude API", "Claude API"),
                       "openai_compatible": ("兼容 API", "Compatible API"), "opencode": ("OpenCode CLI", "OpenCode CLI"),
                       "gemini_cli": ("Gemini CLI", "Gemini CLI")}
@@ -569,7 +614,8 @@ class Handler(BaseHTTPRequestHandler):
                           "key_hint": value["key_hint"]}
                          for key, value in app_settings.PROVIDER_PRESETS.items() if key in labels
                          for zh, en in [labels[key]]]
-            self._json(HTTPStatus.OK, {"disciplines": disciplines, "sources": sources, "providers": providers})
+            self._json(HTTPStatus.OK, {"disciplines": disciplines, "sources": sources,
+                                      "journals": journals, "providers": providers})
             return
         if path.startswith("/reports/"):
             relative = path.removeprefix("/reports/")

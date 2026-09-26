@@ -1,38 +1,80 @@
-# 商科文献雷达
+# 📡 商科文献雷达 — Business Literature Radar
 
-**Business Literature Radar** 是给商学院 PhD 和硕博研究者的本地文献工作台：把自然语言研究问题变成可编辑的检索计划，汇总公开论文元数据与摘要，进行相关性筛选，再用反馈开启第二轮深搜。它在你的电脑上启动双语网页，不需要注册本产品的账户。
+**给商学院 PhD 和硕博研究者用的文献检索工具。** 输入研究问题，选择专业与期刊，找论文、看摘要、筛选结果，再根据反馈继续检索。
 
-[English README](README.en.md) · [隐私说明](docs/privacy.md) · [MIT License](LICENSE)
+这是 [商科 PhD 科研 Skill](https://github.com/Mat-Wong/Business-Academic-Skill) 的配套项目：**雷达负责找文献，科研 Skill 帮你读文献、做研究、写论文。** 可以在本机网页中使用，也可以交给 Codex 或 Claude Code。
 
-![商科文献雷达的本地网页：检索计划、进度与文献阅读桌](docs/screenshot.png)
+[English](README.en.md) · [下载 Windows 版](https://github.com/Mat-Wong/business-literature-radar/releases/latest) · [问题反馈](https://github.com/Mat-Wong/business-literature-radar/issues)
 
-图为使用公开 OpenAlex 文献数据的实际运行界面；论文信息请以原始来源为准。
+![商科文献雷达界面](docs/screenshot.png)
 
-## 先选一种使用方式
+## 📌 一句话
 
-| 使用方式 | 适合谁 | 模型从哪里来 |
-|---|---|---|
-| 本地网页 + 规则模式 | 先体验检索，不想配置模型 | 不调用 LLM；规划、排序和翻译能力有限 |
-| 本地网页 + 自己的 API Key | 想在网页里规划、排序、翻译 | 自己的 OpenAI、Anthropic Claude 或兼容 API，按服务商计费 |
-| 本地网页 + Codex CLI | 已在本机安装并登录 Codex 的用户 | 本机 Codex CLI；受账户资格与使用限制约束 |
-| Codex / Claude Code 原生 Skill | 想在 Agent 内完成完整检索工作流 | Agent 自带模型处理规划、筛选与翻译；无需另填本产品的 API Key |
+**把一个研究问题，变成一份可以继续阅读和筛选的文献清单。**
 
-网页不会把作者的私人 Key 赠送给下载者，也不会把 Claude 订阅伪装成第三方网页的 API。Claude Pro/Max 等订阅用户可在 Claude Code 中使用原生 Skill；网页若选择 Claude，则需要你自己的 Claude API Key。[OpenAI 说明 ChatGPT 与 API 分开计费](https://help.openai.com/en/articles/9039756)；[Anthropic 说明第三方产品应使用 API Key](https://support.claude.com/en/articles/13189465-log-in-to-your-claude-account)。
+## 🎯 能帮你做什么？
 
-## 下载与启动
+| 找文献时的麻烦 | 雷达的做法 |
+|---|---|
+| 有研究问题，但还没想好英文关键词 | 生成检索计划，关键词可以自己修改 |
+| 搜出很多论文，想先看本专业的期刊 | 按专业选择 UTD24 期刊，也可逐本勾选 |
+| 第一轮结果不太对，又要重新组织检索式 | 标记相关与不相关的论文，再做第二轮检索 |
+| 想快速读懂英文标题和摘要 | 保留原文，并列显示中文译文 |
+| 文献散在不同页面，不方便保存 | 导出 HTML、Markdown、CSV 和 JSON |
 
-### Windows：解压即用
+网页与 HTML 报告都支持中英文切换。检索时有进度显示，可以停止；完成后会提醒。
 
-1. 从 [Releases](https://github.com/Mat-Wong/business-literature-radar/releases) 下载最新的 `business-literature-radar-v*-windows.zip` 并解压到有写入权限的普通文件夹（不要直接放在 `Program Files`）。
-2. 双击 `run.bat`。它会启动 `BusinessLiteratureRadar.exe` 并在默认浏览器打开本机网页。
-3. 首次使用可保持“规则模式”，也可在设置中填自己的 API Key，或选择已经登录的 Codex CLI。
-4. 输入研究问题，选择学科方向（自动匹配目标期刊）和年份；先看可编辑计划，再开始检索。
+## 📚 专业与文献范围
 
-Windows 下载包自带 EXE，无需安装 Python。首次启动或网络请求时，系统防火墙和安全软件可能询问是否允许程序运行；本产品只需要连接公开学术元数据源以及你主动选择的 LLM 服务。不要把本机网页端口暴露到外网。
+适配商学院常见研究方向：**Fin、Acc、Mkt、OM、OR、IS、Mgmt、Econ、Strategy**。跨方向选题可以同时选择多个专业。
 
-### macOS / Linux：源码运行
+### UTD24 期刊
 
-需要 Python 3.10+，无需额外运行时依赖：
+可以按专业选择，也可以直接勾选想检索的期刊。以下分组便于查找，不限制交叉研究：
+
+| 方向 | 期刊 |
+|---|---|
+| Accounting | The Accounting Review；Journal of Accounting and Economics；Journal of Accounting Research |
+| Finance | Journal of Finance；Journal of Financial Economics；Review of Financial Studies |
+| Marketing | Journal of Marketing；Journal of Marketing Research；Marketing Science；Journal of Consumer Research |
+| IS | Information Systems Research；INFORMS Journal on Computing；MIS Quarterly |
+| OM / OR | Management Science；Operations Research；Journal of Operations Management；Manufacturing & Service Operations Management；Production and Operations Management |
+| Management / Strategy | Academy of Management Journal；Academy of Management Review；Administrative Science Quarterly；Organization Science；Strategic Management Journal；Journal of International Business Studies |
+
+期刊名单以 [UT Dallas 官方 UTD24 清单](https://jsom.utdallas.edu/the-utd-top-100-business-school-research-rankings/list-of-journals) 为准。**Econ 是可选研究方向，UTD24 本身不是经济学顶刊清单。**
+
+### arXiv 与 SSRN
+
+也可加入 **arXiv** 和 **SSRN**，查找预印本、工作论文及交叉学科研究。
+
+目前检索论文题录、摘要和原始链接，不下载 PDF 全文。部分论文没有公开摘要；结果适合发现与初筛文献，正式引用前仍需阅读原文。
+
+## 🚀 下载与使用
+
+### Windows
+
+1. 从 [最新版本](https://github.com/Mat-Wong/business-literature-radar/releases/latest) 下载 `business-literature-radar-v*-windows.zip`，解压。
+2. 双击 `run.bat`，浏览器会打开本机网页。无需安装 Python。
+3. 在设置里选择模型，输入自己的 API Key；已经登录 Codex 的用户也可选择本机 Codex。设置会保存在本地，下次不用重新填写。
+
+不配置模型也能用规则模式做基础检索，但不能生成中文译文。
+
+### 开始检索
+
+1. **写研究问题**：中英文都可以，补充年份、专业、期刊和排除条件。
+2. **确认检索计划**：检查关键词和范围，按需要修改，再开始检索。
+3. **筛选首轮结果**：标记“相关 / 不相关 / 不确定”，继续第二轮检索。
+4. **保存报告**：结果保存在程序目录的 `output/` 中，也可从网页打开。
+
+例如：
+
+> 检索 2020 年以来关于生成式 AI 如何影响消费者决策的研究，以 Marketing 期刊和 SSRN 为主。保留实验研究，排除纯技术模型论文，标题和摘要需要中文翻译。
+
+勾选翻译后，会处理所有展示论文的标题和已有摘要。没有原始摘要或模型调用未成功的条目会注明，便于补查。
+
+### macOS / Linux
+
+需要 Python 3.10+：
 
 ```bash
 git clone https://github.com/Mat-Wong/business-literature-radar.git
@@ -40,73 +82,51 @@ cd business-literature-radar
 python3 app.py
 ```
 
-也可以在已下载的源码目录执行 `sh run.sh`。Windows 源码用户运行 `python app.py` 或双击 `run.bat`。网页仅在 `127.0.0.1` 监听；控制台会显示打开地址。
+也可在源码目录执行 `sh run.sh`。Windows 源码用户可执行 `python app.py`。
 
-## 一次检索怎么走
+## 🤖 模型怎么选？
 
-1. 用中文或英文描述问题，可补充纳入标准与排除条件。选择年份、结果上限和学科方向，系统据此匹配目标期刊；默认方向为 IS 与 QM。
-2. 预览并修改检索计划，然后启动首轮检索。界面显示阶段、进度和日志；可以停止任务。
-3. 阅读结果、来源链接与原始摘要。对首轮候选标记“相关 / 不相关 / 不确定”，再执行第二轮深搜。第二轮会根据反馈改写查询，并可沿相关论文的引用网络寻找额外候选。
-4. 在结果页与导出的 HTML 报告中切换中文 / English。论文原始标题和摘要不被覆盖；启用翻译时，并列展示中文译文。缺失源摘要的论文会明确标注，模型不可用导致的翻译遗漏也会提示。
-5. 打开程序所在目录的 `output/` 中的 HTML、Markdown、CSV 或 JSON 文件。第二轮会记录反馈和搜索审计。
+| 方式 | 使用方法 |
+|---|---|
+| OpenAI / Claude API | 在网页设置中填写自己的 Key |
+| 其他兼容 API | 填写服务商的接口地址、模型名和 Key |
+| 本机 Codex | 先安装并登录 Codex，再在网页中选择 |
+| Codex / Claude Code Skill | 在对应工具中打开项目，用 Skill 完成检索、筛选与翻译 |
+| OpenCode / Gemini CLI | 在高级设置中选择已安装并登录的本机工具 |
 
-进度百分比代表已完成的工作阶段，不是准确的剩余时间估计。停止时可能保留部分文件；只有报告成功生成才提示完成。关闭浏览器标签页并不会退出本机服务；请使用界面的“退出应用”按钮。
+**API 按服务商计费；Codex / Claude Code Skills 使用已登录账户，受账户额度限制。** ChatGPT 或 Claude 订阅与 API 额度是两回事。
 
-## 文献范围与可核验性
+应用在本机运行，模型设置保存在本地。研究内容会发送给你选择的模型服务，详见[隐私说明](docs/privacy.md)。
 
-工具聚合 OpenAlex、Crossref、Semantic Scholar、arXiv、DBLP 和 SSRN 相关的公开元数据，按 DOI 等标识去重，并结合主题、年份及所选目标期刊排序。学科选择覆盖 IS、QM / Analytics、OM、Strategy、Finance、Accounting、Management / OB、Marketing、Business Economics、Econometrics / Statistics / Data Science、Behavioral Science、Political Economy / Public Policy、Health Care Management、Ethics & Legal Studies。arXiv、SSRN 和 CS/ML 仍作为跨学科线索保留。
+## 🧩 Codex / Claude Code Skill
 
-这些来源的覆盖与摘要完整度不一致，个别服务会限流或拒绝请求。结果只是研究发现与初筛辅助，不保证查全，也不能代替数据库检索、人工复核或系统综述流程。目前不下载和解析 PDF 全文，也不绕过付费墙。
+下载项目，在 Codex 或 Claude Code 中打开项目文件夹，然后直接说：
 
-## 模型设置与成本
+```text
+使用 business-literature-radar Skill，检索供应链韧性与企业绩效的文献。
+范围是 2018—2026 年的 OM / OR 和 Strategy 期刊，加上 SSRN。
+先展示检索计划，筛选首轮结果后继续检索，最后给我带中文译文的报告。
+```
 
-设置只需在本机填一次；配置保存在独立于作者个人版的 `BusinessLiteratureRadar` 用户目录。Key 不随 GitHub 源码或 Windows 下载包分发，也不会写入报告。具体位置、保护方式与数据流见[隐私说明](docs/privacy.md)。
-
-- **OpenAI API**：在 [OpenAI API 平台](https://platform.openai.com/api-keys)创建自己的 Key；需确认 API 账户有可用额度。
-- **Claude API**：在 [Claude Console](https://console.anthropic.com/settings/keys)创建自己的 Key。Claude 订阅不等于 Claude API 额度。
-- **兼容 API**：填写服务商提供的完整 HTTPS endpoint、模型名和 Key；只对你信任的服务商发送研究内容。
-- **Codex CLI**：先按 [Codex 非交互模式说明](https://learn.chatgpt.com/docs/non-interactive-mode)在本机安装、登录并验证 CLI。网页只调用本机 CLI，不读取其登录凭据。CLI 的可用模型与限制由你的账户决定。
-- **OpenCode / Gemini CLI**：保留为高级本机 CLI 选项，需你自己安装并登录；不同版本兼容性可能有差异。
-- **规则模式**：不调用 LLM，适合无需 Key 的基础检索；不会凭空生成中文翻译。
-
-启用翻译时，工具会尝试为所有最终展示论文生成中文标题与摘要，并在一个模型失败时尝试已配置的备用模型。服务商限额、超时或源数据缺失仍可能使个别译文不可用；界面与报告会标明状态。长时间深搜与全量翻译可能产生明显 API 成本，请先设置服务商的消费上限。
-
-## Codex 与 Claude Code Skills
-
-仓库同时包含：
+两份 Skill 已放在各自的项目目录，无需另外填写本产品的 API Key：
 
 ```text
 .agents/skills/business-literature-radar/   # Codex
 .claude/skills/business-literature-radar/    # Claude Code
 ```
 
-在 Codex 或 Claude Code 中打开该项目，明确提出“使用 business-literature-radar Skill 检索……”。Skill 调用同一套本地检索引擎，Agent 自身负责规划、筛选、翻译与报告整理，因此无需在本产品中填写 API Key。Windows 下载包自带可供 Skill 调用的引擎 EXE；macOS/Linux 使用 Python 源码。Codex 和 Claude Code 的使用受各自账户、客户端与模型限制约束；Skill 不承诺免除订阅费或无限额度。原生 Skill 的安装机制可参考 [Codex Skills](https://learn.chatgpt.com/docs/build-skills) 与 [Claude Code Skills](https://code.claude.com/docs/en/skills)。
+Skill 使用同一套检索引擎，由 Codex 或 Claude Code 负责规划、判断相关性和翻译。Windows 下载包自带引擎；其他系统使用 Python 源码。
 
-Skill 的翻译桥接会把最终论文分成可核对的小批次；只有每篇均有译文时，才另外生成 `-agent` 版本的 HTML/Markdown/CSV/JSON 报告，原始检索报告保留不变。
+## 开发与反馈
 
-## 项目结构
-
-```text
-app.py                 本地网页服务与任务控制
-web/                   双语界面
-search_papers.py       首轮检索与报告生成
-search_v2.py           反馈驱动的第二轮检索
-agent_bridge.py        原生 Skill 与引擎之间的工作流桥接
-app_settings.py        本机用户设置
-.agents/skills/         Codex Skill
-.claude/skills/         Claude Code Skill
-run.bat / run.sh       启动入口
-build_windows.ps1      Windows 打包脚本
-```
-
-源码仅依赖 Python 标准库；Windows 打包使用 PyInstaller。开发者可先运行不联网自检：
+源码运行仅需 Python 标准库。不联网自检：
 
 ```bash
 python search_papers.py --self-test
 ```
 
-Windows 打包及自动发布说明见[构建文档](docs/build.md)。
+打包与开发说明见[构建文档](docs/build.md)，检索实现见[数据来源说明](docs/sources.md)。
 
-## 问题反馈与许可
+欢迎在 [Issues](https://github.com/Mat-Wong/business-literature-radar/issues) 提建议、报问题。贴错误信息前，请删去 API Key 和私人研究内容。
 
-欢迎在 [GitHub Issues](https://github.com/Mat-Wong/business-literature-radar/issues) 报告问题或建议。请附 Python/Windows 版本、可公开的错误信息和复现步骤，不要粘贴 API Key、个人研究数据或本机配置文件。代码以 [MIT License](LICENSE) 发布。Mat-Wong 制作与维护。
+**MIT 开源 · Mat-Wong**。如果有用，欢迎 Star，也欢迎一起改进。

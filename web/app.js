@@ -10,6 +10,12 @@
     limit: $("#limit-input"),
     disciplines: $("#discipline-options"),
     sources: $("#source-options"),
+    journals: $("#journal-options"),
+    journalPicker: $("#journal-picker"),
+    journalCount: $("#journal-count"),
+    journalMatch: $("#journal-match"),
+    journalAll: $("#journal-all"),
+    econNote: $("#econ-note"),
     translate: $("#translate-input"),
     searchForm: $("#search-form"),
     planButton: $("#plan-button"),
@@ -62,23 +68,25 @@
   const I18N = {
     zh: {
       brand: "商科文献雷达", localOnly: "仅在本机运行", settings: "模型设置",
-      workspace: "研究工作台", searchTitle: "从问题出发。", searchIntro: "写下你真正想找的文献。先查看检索计划，再开始搜索。",
+      workspace: "商学院 PhD · 文献检索", searchTitle: "找文献。", searchIntro: "选好学科和期刊，写下你的研究问题。",
       queryLabel: "研究问题", queryPlaceholder: "例如：生成式 AI 如何改变企业决策？", queryHelp: "可以用中文或英文，尽量写明情境与核心变量。",
       fromYear: "起始年份", toYear: "截止年份", limitLabel: "展示文献", disciplineLabel: "研究学科", sourceLabel: "文献来源",
-      loadingOptions: "正在载入…", translateLabel: "同时生成中文译文", translateHelp: "展示的每篇文献都配有题名与摘要译文",
-      previewPlan: "预览计划", startSearch: "开始检索", metadataNote: "只检索公开元数据、摘要和开放获取链接；不抓取付费全文。",
+      journalHeading: "选择 UTD24 期刊", journalHelp: "按学科勾选，也可以单独调整。", matchJournals: "按学科选择", allJournals: "全选",
+      econNote: "Econ 可检索商科期刊与 SSRN 的经济学研究；UTD24 不包含经济学五大刊。", needJournal: "请至少选择一本 UTD24 期刊，或取消 UTD24。",
+      loadingOptions: "正在载入…", translateLabel: "同时生成中文译文", translateHelp: "翻译每篇文献的题名与已有摘要",
+      previewPlan: "预览计划", startSearch: "开始检索", metadataNote: "查看题名、摘要与原文链接。阅读全文可通过学校图书馆。",
       currentTask: "当前任务", statusHeading: "检索进度", statusIdle: "等待开始", statusPlanning: "制定计划", statusRunning: "运行中",
       statusCompleted: "已完成", statusFailed: "失败", statusStopped: "已停止", statusStopping: "正在停止",
       readyStage: "准备好后，先预览检索计划。", readyDetail: "检索期间可在这里查看阶段与百分比。",
       idleFootnote: "尚未运行", stopSearch: "停止检索", planCaption: "搜索之前", planHeading: "检索计划",
       editablePlan: "可编辑后再运行", englishQuery: "英文检索式", planSummary: "检索思路",
       expandedQueries: "拓展关键词", mustTerms: "必须包含", excludeTerms: "排除术语",
-      onePerLine: "每行一个", usePlan: "使用此计划检索", readingDesk: "阅读桌", resultsHeading: "文献结果",
-      emptyTitle: "这里还没有文献。", emptyText: "输入研究问题，预览计划，然后开始检索。找到的题名、摘要与来源会在这里集中展示。",
+      onePerLine: "每行一个", usePlan: "使用此计划检索", readingDesk: "检索结果", resultsHeading: "文献列表",
+      emptyTitle: "还没有检索结果", emptyText: "输入问题并开始检索，论文会显示在这里。",
       feedbackInstruction: "标记相关性，帮助第二轮检索聚焦。", deepSearch: "开始第二轮深搜", openReport: "打开完整报告 ↗",
       productName: "商科文献雷达", footerNote: "本地运行 · 文献数据请以原始来源为准",
-      settingsCaption: "个人模型连接", settingsHeading: "选择你的模型入口",
-      settingsIntro: "设置只保存在你的电脑上。公开版本不预置作者的私人密钥。",
+      settingsCaption: "AI 辅助检索", settingsHeading: "设置模型",
+      settingsIntro: "填入自己的 API Key，或连接已登录的本机工具。设置保存后，下次无需重填。",
       backendLabel: "运行方式", backendApi: "使用自己的 API Key", backendApiHint: "OpenAI、Claude 或兼容服务",
       backendCodex: "使用已登录的 Codex", backendCodexHint: "使用本机 Codex CLI 与你的订阅",
       backendAdvanced: "其他本机 CLI（高级）", backendAdvancedHint: "OpenCode 或 Gemini CLI，需自行安装登录",
@@ -89,10 +97,10 @@
       modelsPlaceholder: "用英文逗号分隔多个模型", modelsHelp: "额度不足时会按此顺序尝试其他模型。",
       cancel: "取消", saveSettings: "保存设置", desktopNotify: "检索完成时发送桌面提醒",
       desktopNotifyHelp: "需要浏览器通知权限，可随时关闭。",
-      codexNote: "请先在本机安装并登录 Codex CLI。网页不会读取或保存你的 Codex 凭据。",
+      codexNote: "先安装并登录 Codex CLI，即可在网页中使用。模型与额度由你的账户决定。",
       advancedNote: "OpenCode / Gemini CLI 需先在本机安装并登录；不同版本的命令行兼容性可能不同。",
       rulesNote: "规则模式无需密钥，可检索公开文献。中文翻译需要 API 或 Codex。",
-      apiNote: "Claude Pro/Max 订阅请在 Claude Code Skill 内使用；网页中的 Claude 入口需你自己的 API Key。",
+      apiNote: "API 按服务商计费。使用 Claude 订阅的用户，可在 Claude Code 中运行本项目 Skill。",
       needQuery: "请先写下研究问题。", invalidYears: "年份范围不正确，请检查起止年份。",
       needDiscipline: "至少选择一个研究学科。", needSource: "至少选择一个文献来源。",
       apiRequired: "尚未保存 API Key，请在模型设置中填入自己的密钥。",
@@ -100,7 +108,7 @@
       requestFailed: "请求未完成，请检查本地服务并重试。", disconnected: "本地服务暂时无法连接。",
       planReady: "计划已准备好，可检查关键词并开始检索。", searchReady: "文献检索完成。", deepReady: "第二轮深搜完成。",
       searchFailed: "检索未完成。", stopped: "检索已停止。", stopping: "正在安全停止…",
-      runningDetail: "正在处理，请稍候。", completionToast: "检索完成，文献已在阅读桌中。", planToast: "检索计划已生成。",
+      runningDetail: "正在处理，请稍候。", completionToast: "检索完成，可以查看文献了。", planToast: "检索计划已生成。",
       deepToast: "第二轮深搜完成，结果已更新。", count: "篇文献", abstract: "查看摘要", abstractOriginal: "原文摘要",
       abstractTranslation: "中文摘要", missingAbstract: "来源未提供摘要。", source: "来源", year: "年份", score: "相关分",
       feedbackLabel: "相关性", relevant: "相关", irrelevant: "不相关", uncertain: "待定",
@@ -117,23 +125,25 @@
     },
     en: {
       brand: "Literature Radar", localOnly: "Running on this device", settings: "Model settings",
-      workspace: "Research workbench", searchTitle: "Start with your question.", searchIntro: "Describe the literature you need. Review the search plan before running it.",
+      workspace: "Business-school PhDs · Literature search", searchTitle: "Find papers.", searchIntro: "Choose your field and journals, then enter a research question.",
       queryLabel: "Research question", queryPlaceholder: "e.g. How does generative AI change firm decisions?", queryHelp: "Write in English or Chinese; name the setting and key concepts.",
       fromYear: "From year", toYear: "Through year", limitLabel: "Papers to show", disciplineLabel: "Disciplines", sourceLabel: "Sources",
-      loadingOptions: "Loading…", translateLabel: "Add Chinese translations", translateHelp: "Translate titles and abstracts for every displayed paper",
-      previewPlan: "Preview plan", startSearch: "Start search", metadataNote: "Searches public metadata, abstracts and open-access links; does not retrieve paywalled full text.",
+      journalHeading: "Choose UTD24 journals", journalHelp: "Selected by discipline; adjust individual journals as needed.", matchJournals: "Match disciplines", allJournals: "Select all",
+      econNote: "Econ searches economics topics in business journals and SSRN. The economics top five are not part of UTD24.", needJournal: "Choose at least one UTD24 journal, or turn off UTD24.",
+      loadingOptions: "Loading…", translateLabel: "Add Chinese translations", translateHelp: "Translate each paper’s title and available abstract",
+      previewPlan: "Preview plan", startSearch: "Start search", metadataNote: "View titles, abstracts and paper links. Your library may provide full-text access.",
       currentTask: "Current task", statusHeading: "Search progress", statusIdle: "Ready", statusPlanning: "Planning", statusRunning: "Running",
       statusCompleted: "Complete", statusFailed: "Failed", statusStopped: "Stopped", statusStopping: "Stopping",
       readyStage: "Preview a search plan when you are ready.", readyDetail: "Stages and percentages will appear here while a search runs.",
       idleFootnote: "No task running", stopSearch: "Stop search", planCaption: "Before the search", planHeading: "Search plan",
       editablePlan: "Edit before running", englishQuery: "English search query", planSummary: "Search approach",
       expandedQueries: "Expanded queries", mustTerms: "Required terms", excludeTerms: "Exclude terms",
-      onePerLine: "One per line", usePlan: "Search with this plan", readingDesk: "Reading desk", resultsHeading: "Papers",
-      emptyTitle: "No papers here yet.", emptyText: "Enter a research question, preview the plan, then start a search. Titles, abstracts and sources will appear here.",
+      onePerLine: "One per line", usePlan: "Search with this plan", readingDesk: "Search results", resultsHeading: "Papers",
+      emptyTitle: "No results yet", emptyText: "Enter a question and start searching. Papers will appear here.",
       feedbackInstruction: "Mark relevance to focus the second search round.", deepSearch: "Run second-round search", openReport: "Open full report ↗",
       productName: "Literature Radar", footerNote: "Runs locally · Verify bibliographic details at their source",
-      settingsCaption: "Your model connection", settingsHeading: "Choose a model route",
-      settingsIntro: "Settings stay on your computer. This public edition contains no private author key.",
+      settingsCaption: "AI-assisted search", settingsHeading: "Model settings",
+      settingsIntro: "Enter your API key or connect a signed-in local tool. Save once and reuse next time.",
       backendLabel: "Run with", backendApi: "Your own API key", backendApiHint: "OpenAI, Claude or a compatible service",
       backendCodex: "Signed-in Codex", backendCodexHint: "Uses local Codex CLI and your subscription",
       backendAdvanced: "Other local CLI (advanced)", backendAdvancedHint: "OpenCode or Gemini CLI; install and sign in yourself",
@@ -144,10 +154,10 @@
       modelsPlaceholder: "Separate models with commas", modelsHelp: "If one model is unavailable, the next is tried.",
       cancel: "Cancel", saveSettings: "Save settings", desktopNotify: "Send a desktop notification when done",
       desktopNotifyHelp: "Requires browser permission; you can turn it off anytime.",
-      codexNote: "Install and sign in to Codex CLI on this device first. The page does not read or save Codex credentials.",
+      codexNote: "Install and sign in to Codex CLI first. Models and usage limits depend on your account.",
       advancedNote: "Install and sign in to OpenCode or Gemini CLI first. Command compatibility may vary by version.",
       rulesNote: "Rule mode needs no key and can search public papers. Chinese translation requires an API or Codex.",
-      apiNote: "Use a Claude Pro/Max subscription through the Claude Code Skill; the web app needs your own Claude API key.",
+      apiNote: "API usage is billed by your provider. Claude subscribers can run this project's Skill in Claude Code.",
       needQuery: "Write a research question before continuing.", invalidYears: "The year range is invalid; check the start and end years.",
       needDiscipline: "Select at least one discipline.", needSource: "Select at least one source.",
       apiRequired: "No API key is saved. Open model settings and enter your own key.",
@@ -155,7 +165,7 @@
       requestFailed: "The request did not finish. Check the local service and retry.", disconnected: "The local service is unavailable.",
       planReady: "The plan is ready. Review its terms and start the search.", searchReady: "Literature search complete.", deepReady: "Second-round search complete.",
       searchFailed: "The search did not finish.", stopped: "The search has stopped.", stopping: "Stopping safely…",
-      runningDetail: "Working through the search. Please wait.", completionToast: "Search complete. Papers are on your reading desk.", planToast: "Search plan ready.",
+      runningDetail: "Working through the search. Please wait.", completionToast: "Search complete. Your papers are ready.", planToast: "Search plan ready.",
       deepToast: "Second-round search complete. Results updated.", count: "papers", abstract: "Read abstract", abstractOriginal: "Original abstract",
       abstractTranslation: "Chinese translation", missingAbstract: "No abstract was provided by this source.", source: "Source", year: "Year", score: "Relevance",
       feedbackLabel: "Relevance", relevant: "Relevant", irrelevant: "Not relevant", uncertain: "Unsure",
@@ -275,9 +285,28 @@
       const checkboxes = [...container.querySelectorAll("input:checked")].map((input) => input.value);
       return container.querySelector("input") ? checkboxes : fallback;
     };
-    choiceNodes(nodes.disciplines, client.meta.disciplines, picked(nodes.disciplines, ["is", "qm"]));
-    choiceNodes(nodes.sources, client.meta.sources, picked(nodes.sources, ["openalex", "crossref", "semantic_scholar"]));
+    choiceNodes(nodes.disciplines, client.meta.disciplines, picked(nodes.disciplines, ["is", "or"]));
+    choiceNodes(nodes.sources, client.meta.sources, picked(nodes.sources, ["utd24", "arxiv", "ssrn"]));
+    renderJournals(!nodes.journals.querySelector("input"));
     renderProviders();
+  }
+
+  function checkedValues(container) {
+    return [...container.querySelectorAll("input:checked")].map((input) => input.value);
+  }
+
+  function renderJournals(matchDisciplines = false) {
+    const disciplines = checkedValues(nodes.disciplines);
+    const selected = matchDisciplines ? (client.meta.journals || []).filter((journal) =>
+      (journal.disciplines || []).some((discipline) => disciplines.includes(discipline))).map((journal) => journal.id) : checkedValues(nodes.journals);
+    choiceNodes(nodes.journals, client.meta.journals || [], selected);
+    updateJournalState();
+  }
+
+  function updateJournalState() {
+    nodes.journalPicker.hidden = !checkedValues(nodes.sources).includes("utd24");
+    nodes.journalCount.textContent = `${checkedValues(nodes.journals).length} / ${(client.meta.journals || []).length}`;
+    nodes.econNote.hidden = !checkedValues(nodes.disciplines).includes("economics");
   }
 
   function renderProviders() {
@@ -416,7 +445,7 @@
       body.append(title);
       if (row.title_zh) body.append(textElement("p", "paper-title-zh", row.title_zh));
       const meta = textElement("div", "paper-meta", "");
-      [row.year, row.venue, row.source, Number.isFinite(Number(row.score)) ? `${t("score")} ${Number(row.score).toFixed(1)}` : ""].filter(Boolean).forEach((v) => meta.append(textElement("span", "", v)));
+      [row.year, row.venue || row.publication_source || "", Number.isFinite(Number(row.score)) ? `${t("score")} ${Number(row.score).toFixed(1)}` : ""].filter(Boolean).forEach((v) => meta.append(textElement("span", "", v)));
       body.append(meta);
       if (row.abstract || row.abstract_zh) {
         const details = document.createElement("details");
@@ -482,6 +511,14 @@
       client.online = true;
       client.config = state.config || {};
       const job = state.job || null;
+      if (job && Array.isArray(job.disciplines) && Array.isArray(job.sources) && !client.restoredFilters) {
+        nodes.disciplines.querySelectorAll("input").forEach((input) => { input.checked = job.disciplines.includes(input.value); });
+        nodes.sources.querySelectorAll("input").forEach((input) => { input.checked = job.sources.includes(input.value); });
+        renderJournals(true);
+        if (Array.isArray(job.journals)) nodes.journals.querySelectorAll("input").forEach((input) => { input.checked = job.journals.includes(input.value); });
+        updateJournalState();
+        client.restoredFilters = true;
+      }
       if (job?.query && !nodes.query.value.trim()) nodes.query.value = job.query;
       if (job?.years && /^\d{4}-\d{4}$/.test(job.years) && !client.restoredYears) {
         const [from, to] = job.years.split("-");
@@ -531,14 +568,15 @@
     const to = Number(nodes.to.value);
     const disciplines = [...nodes.disciplines.querySelectorAll("input:checked")].map((node) => node.value);
     const sources = [...nodes.sources.querySelectorAll("input:checked")].map((node) => node.value);
+    const journals = checkedValues(nodes.journals);
     const invalid = !query ? t("needQuery") : !Number.isInteger(from) || !Number.isInteger(to) || from > to ? t("invalidYears") :
-      !disciplines.length ? t("needDiscipline") : !sources.length ? t("needSource") : nodes.translate.checked && (client.config.llm_backend || "rules") === "rules" ? t("noTranslateRules") : "";
+      !disciplines.length ? t("needDiscipline") : !sources.length ? t("needSource") : sources.includes("utd24") && !journals.length ? t("needJournal") : nodes.translate.checked && (client.config.llm_backend || "rules") === "rules" ? t("noTranslateRules") : "";
     if (invalid) {
       nodes.queryError.textContent = invalid;
       nodes.queryError.hidden = false;
       throw new Error(invalid);
     }
-    return { query, years: `${from}-${to}`, limit: Number(nodes.limit.value), disciplines, sources, translate: nodes.translate.checked };
+    return { query, years: `${from}-${to}`, limit: Number(nodes.limit.value), disciplines, sources, journals, translate: nodes.translate.checked };
   }
 
   async function previewPlan() {
@@ -568,6 +606,11 @@
   }
 
   function bindEvents() {
+    nodes.disciplines.addEventListener("change", () => renderJournals(true));
+    nodes.sources.addEventListener("change", updateJournalState);
+    nodes.journals.addEventListener("change", updateJournalState);
+    nodes.journalMatch.addEventListener("click", () => renderJournals(true));
+    nodes.journalAll.addEventListener("click", () => { nodes.journals.querySelectorAll("input").forEach((input) => { input.checked = true; }); updateJournalState(); });
     nodes.lang.addEventListener("click", () => {
       client.lang = client.lang === "zh" ? "en" : "zh";
       localStorage.setItem("radar-language", client.lang);

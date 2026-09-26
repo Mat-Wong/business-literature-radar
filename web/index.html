@@ -28,9 +28,9 @@
     <main id="top" class="workspace">
       <aside class="search-rail" aria-labelledby="search-heading">
         <div class="rail-intro">
-          <span class="eyebrow" data-i18n="workspace">研究工作台</span>
-          <h1 id="search-heading" data-i18n="searchTitle">从问题出发。</h1>
-          <p data-i18n="searchIntro">写下你真正想找的文献。先查看检索计划，再开始搜索。</p>
+          <span class="eyebrow" data-i18n="workspace">商学院 PhD · 文献检索</span>
+          <h1 id="search-heading" data-i18n="searchTitle">找文献。</h1>
+          <p data-i18n="searchIntro">选好学科和期刊，写下你的研究问题。</p>
         </div>
         <form id="search-form" novalidate>
           <div class="field">
@@ -46,13 +46,15 @@
           <div class="field field--short"><label for="limit-input" data-i18n="limitLabel">展示文献</label><select id="limit-input"><option value="10">10</option><option value="20" selected>20</option><option value="40">40</option><option value="60">60</option></select></div>
           <fieldset class="choice-group"><legend data-i18n="disciplineLabel">研究学科</legend><div id="discipline-options" class="choice-list"><span class="muted" data-i18n="loadingOptions">正在载入…</span></div></fieldset>
           <fieldset class="choice-group"><legend data-i18n="sourceLabel">文献来源</legend><div id="source-options" class="choice-list"><span class="muted" data-i18n="loadingOptions">正在载入…</span></div></fieldset>
-          <label class="switch-row" for="translate-input"><span><strong data-i18n="translateLabel">同时生成中文译文</strong><small data-i18n="translateHelp">展示的每篇文献都配有题名与摘要译文</small></span><input id="translate-input" type="checkbox" role="switch"></label>
+          <details id="journal-picker" class="journal-picker"><summary><span data-i18n="journalHeading">选择 UTD24 期刊</span><span id="journal-count" class="muted"></span></summary><p class="field-help" data-i18n="journalHelp">按学科勾选，也可以单独调整。</p><div class="journal-actions"><button type="button" class="text-button" id="journal-match" data-i18n="matchJournals">按学科选择</button><button type="button" class="text-button" id="journal-all" data-i18n="allJournals">全选</button></div><div id="journal-options" class="journal-list"></div></details>
+          <p id="econ-note" class="field-help" hidden data-i18n="econNote">Econ 可检索商科期刊与 SSRN 的经济学研究；UTD24 不包含经济学五大刊。</p>
+          <label class="switch-row" for="translate-input"><span><strong data-i18n="translateLabel">同时生成中文译文</strong><small data-i18n="translateHelp">翻译每篇文献的题名与已有摘要</small></span><input id="translate-input" type="checkbox" role="switch"></label>
           <div class="search-actions">
             <button type="button" class="button button--quiet" id="plan-button" data-i18n="previewPlan">预览计划</button>
             <button type="submit" class="button button--primary" id="search-button" data-i18n="startSearch">开始检索</button>
           </div>
         </form>
-        <p class="rail-footnote" data-i18n="metadataNote">只检索公开元数据、摘要和开放获取链接；不抓取付费全文。</p>
+        <p class="rail-footnote" data-i18n="metadataNote">查看题名、摘要与原文链接。阅读全文可通过学校图书馆。</p>
       </aside>
 
       <div class="main-column">
@@ -76,7 +78,7 @@
         </section>
 
         <section class="results-panel" aria-labelledby="results-heading">
-          <div class="section-heading results-heading"><div><p class="section-caption" data-i18n="readingDesk">阅读桌</p><h2 id="results-heading" data-i18n="resultsHeading">文献结果</h2></div><span id="results-count" class="section-note"></span></div>
+          <div class="section-heading results-heading"><div><p class="section-caption" data-i18n="readingDesk">检索结果</p><h2 id="results-heading" data-i18n="resultsHeading">文献列表</h2></div><span id="results-count" class="section-note"></span></div>
           <div id="results-empty" class="empty-state"><div class="empty-symbol" aria-hidden="true">↗</div><h3 data-i18n="emptyTitle">这里还没有文献。</h3><p data-i18n="emptyText">输入研究问题，预览计划，然后开始检索。找到的题名、摘要与来源会在这里集中展示。</p></div>
           <div id="results-content" hidden><div class="results-toolbar"><p data-i18n="feedbackInstruction">标记相关性，帮助第二轮检索聚焦。</p><div class="results-toolbar__actions"><button type="button" class="button button--quiet" id="deep-button" disabled data-i18n="deepSearch">开始第二轮深搜</button><a id="report-link" class="button button--link" target="_blank" rel="noopener noreferrer" hidden data-i18n="openReport">打开完整报告 ↗</a></div></div><ol id="results-list" class="paper-list"></ol></div>
         </section>
@@ -85,7 +87,7 @@
     <footer class="site-footer"><span>© 2026 Mat-Wong · <span data-i18n="productName">商科文献雷达</span></span><span data-i18n="footerNote">本地运行 · 文献数据请以原始来源为准</span></footer>
   </div>
 
-  <dialog id="settings-dialog" aria-labelledby="settings-heading"><form method="dialog" id="settings-form"><div class="dialog-head"><div><p class="section-caption" data-i18n="settingsCaption">个人模型连接</p><h2 id="settings-heading" data-i18n="settingsHeading">选择你的模型入口</h2></div><button type="button" class="icon-close" id="settings-close" aria-label="Close">×</button></div><p class="dialog-intro" data-i18n="settingsIntro">设置只保存在你的电脑上。公开版本不预置作者的私人密钥。</p>
+  <dialog id="settings-dialog" aria-labelledby="settings-heading"><form method="dialog" id="settings-form"><div class="dialog-head"><div><p class="section-caption" data-i18n="settingsCaption">个人模型连接</p><h2 id="settings-heading" data-i18n="settingsHeading">选择你的模型入口</h2></div><button type="button" class="icon-close" id="settings-close" aria-label="Close">×</button></div><p class="dialog-intro" data-i18n="settingsIntro">填入自己的 API Key，或连接已登录的本机工具。设置保存后，下次无需重填。</p>
     <fieldset class="backend-group"><legend data-i18n="backendLabel">运行方式</legend><label class="backend-option"><input type="radio" name="llm-backend" value="api"><span><strong data-i18n="backendApi">使用自己的 API Key</strong><small data-i18n="backendApiHint">OpenAI、Claude 或兼容服务</small></span></label><label class="backend-option"><input type="radio" name="llm-backend" value="codex"><span><strong data-i18n="backendCodex">使用已登录的 Codex</strong><small data-i18n="backendCodexHint">使用本机 Codex CLI 与你的订阅</small></span></label><label class="backend-option"><input type="radio" name="llm-backend" value="advanced"><span><strong data-i18n="backendAdvanced">其他本机 CLI（高级）</strong><small data-i18n="backendAdvancedHint">OpenCode 或 Gemini CLI，需自行安装登录</small></span></label><label class="backend-option"><input type="radio" name="llm-backend" value="rules"><span><strong data-i18n="backendRules">先不用模型</strong><small data-i18n="backendRulesHint">规则检索；不支持模型翻译</small></span></label></fieldset>
     <div id="api-fields" class="api-fields"><div class="field"><label for="provider-select" data-i18n="providerLabel">API 服务商</label><select id="provider-select"></select></div><div id="api-key-field" class="field"><label for="api-key-input" data-i18n="apiKeyLabel">API Key</label><input id="api-key-input" type="password" autocomplete="off" spellcheck="false" data-i18n-placeholder="savedKeyPlaceholder" placeholder="输入你的 API Key"><small id="key-help" class="field-help" data-i18n="keyLocal">密钥保存在本机，不会出现在报告中。</small></div><details class="advanced-settings"><summary data-i18n="advancedSettings">高级设置</summary><div id="api-endpoint-field" class="field"><label for="api-endpoint-input" data-i18n="endpointLabel">API 地址</label><input id="api-endpoint-input" type="url" spellcheck="false" placeholder="https://…"></div><div class="field"><label for="api-models-input" data-i18n="modelsLabel">模型顺序</label><input id="api-models-input" type="text" spellcheck="false" data-i18n-placeholder="modelsPlaceholder" placeholder="用英文逗号分隔多个模型"><small class="field-help" data-i18n="modelsHelp">额度不足时会按此顺序尝试其他模型。</small></div></details></div>
     <div class="dialog-note" id="backend-note" role="note"></div><label class="notification-option" for="desktop-notify-input"><input type="checkbox" id="desktop-notify-input"><span><strong data-i18n="desktopNotify">检索完成时发送桌面提醒</strong><small data-i18n="desktopNotifyHelp">需要浏览器通知权限，可随时关闭。</small></span></label><p class="field-error" id="settings-error" hidden></p><div class="dialog-actions"><button type="button" class="button button--quiet" id="settings-cancel" data-i18n="cancel">取消</button><button type="submit" class="button button--primary" id="settings-save" data-i18n="saveSettings">保存设置</button></div><div class="dialog-exit"><button type="button" class="text-button text-button--danger" id="exit-button" data-i18n="exitApp">退出应用</button><span data-i18n="exitHelp">停止本机服务后即可关闭此标签页。</span></div></form></dialog>
