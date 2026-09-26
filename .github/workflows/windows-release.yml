@@ -72,4 +72,14 @@ jobs:
         run: |
           $archive = Get-ChildItem -LiteralPath 'dist' -Filter '*.zip' | Select-Object -First 1
           if (-not $archive) { throw 'Release archive is missing.' }
-          gh release create $env:GITHUB_REF_NAME $archive.FullName --generate-notes
+          $existing = gh release view $env:GITHUB_REF_NAME --json assets 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            $release = $existing | ConvertFrom-Json
+            if (@($release.assets | ForEach-Object { $_.name }) -contains $archive.Name) {
+              Write-Host "Release already contains $($archive.Name); leaving the published asset unchanged."
+            } else {
+              gh release upload $env:GITHUB_REF_NAME $archive.FullName
+            }
+          } else {
+            gh release create $env:GITHUB_REF_NAME $archive.FullName --generate-notes
+          }
