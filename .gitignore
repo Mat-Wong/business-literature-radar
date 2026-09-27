@@ -23,6 +23,9 @@ dist/
 *.spec
 *.zip
 
+# Personal posting materials stay outside the public repository
+promo/
+
 # Local editor and OS files
 .DS_Store
 Thumbs.db
