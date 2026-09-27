@@ -69,6 +69,7 @@ jobs:
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
         run: |
           $archive = Get-ChildItem -LiteralPath 'dist' -Filter '*.zip' | Select-Object -First 1
           if (-not $archive) { throw 'Release archive is missing.' }
